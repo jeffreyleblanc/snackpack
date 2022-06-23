@@ -147,7 +147,12 @@ def main():
     parser.add_argument('--list-configs', action='store_true')
     parser.add_argument('--examine', action='store_true')
     parser.add_argument('--map', action='store_true')
+    parser.add_argument('--version', action='store_true')
     args = parser.parse_args()
+
+    if(args.version):
+        print('0.1')
+        exit()
 
     P = RichPrinter()
     HOME = Path.home()
