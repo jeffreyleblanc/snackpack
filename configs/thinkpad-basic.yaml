@@ -1,0 +1,61 @@
+---
+type: jbackup.conf.v1
+title: Thinkpad Basic Backup
+look_for_dests:
+    - type: mount
+      mount: /media/jleblanc/think-backup
+      path: home
+sources:
+    - name: Main directories
+      dest: ''
+      sources:
+        - admin
+        - archive
+        - code
+        - inbox
+        # - library
+        # - mock-server
+        - sandbox
+
+    - name: Default directories
+      dest: ''
+      sources:
+        - Desktop
+        - Documents
+        - Downloads
+        - Yaks
+        # - library
+        # - mock-server
+        - Pictures
+
+    - name: Dot Files
+      dest: dot-files
+      sources:
+        - .bash_aliases
+        # - .bash_history
+        # - .bash_logout
+        - .bashrc
+        # - .bashrc~
+        - .bashrc.d
+        # - .cache
+        # - .config
+        # - .cups
+        - .emacs.d
+        - .gitconfig
+        # - .gnome
+        - .gnupg
+        # - .gphoto
+        # - .lesshst
+        # - .local
+        # - .mozilla
+        - .password-store
+        - .pki
+        - .profile
+        # - .python_history
+        # - .sane
+        - .sqlite_history
+        - .ssh
+        # - .sudo_as_admin_successful
+        - .tmux.conf
+        - .tmux.conf.d
+
