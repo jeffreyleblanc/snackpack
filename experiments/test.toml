@@ -11,7 +11,7 @@ path = "home"
 [[sources]]
 name = "Main Directories"
 dest = ""
-sources = """
+sources__ARR = """
 admin
 archive
 code
@@ -23,7 +23,7 @@ sandbox
 [[sources]]
 name = "Default Directories"
 dest = ""
-sources = """
+sources__ARR = """
 Desktop
 Documents
 Downloads
@@ -34,7 +34,7 @@ Pictures
 [[sources]]
 name = "Dot Files"
 dest = "dot-files"
-sources = """
+sources__ARR = """
 .bash_aliases
 # .bash_history
 # .bash_logout
