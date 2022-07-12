@@ -8,8 +8,7 @@ from dataclasses import dataclass, field
 from typing import List
 import argparse
 # Dependencies
-import yaml
-## import sh
+import toml
 
 #-- RichPrinter --------------------------------------------------------------------------------------#
 
@@ -129,6 +128,23 @@ class SimpleProc:
 
 #-- Local Helpers ---------------------------------------------------------------------------#
 
+
+def load_toml_config(filepath, clean=True):
+    with open(filepath,'r') as f:
+        obj = toml.load(f)
+
+    for src in obj['sources']:
+        if 'sources__ARR' in src:
+            lst = []
+            for l in src['sources__ARR'].splitlines():
+                l = l.strip()
+                if l != '' and not l.startswith('#'):
+                    lst.append(l)
+            src['sources'] = lst
+            if clean:
+                del src['sources__ARR']
+    return obj
+
 @dataclass
 class ChunkSource:
     name: str
@@ -160,18 +176,19 @@ def main():
     if args.list_configs:
         configdir = HOME/'.config/snackpack'
         for f in configdir.iterdir():
-            P.rule()
-            P.b(f)
-            obj = yaml.safe_load(f.read_text())
-            P.p(f'title: {obj["title"]}')
-            P.p(f'mount: {obj["look_for_dests"][0]["mount"]}')
+            if f.suffix == '.toml':
+                P.rule()
+                P.b(f)
+                obj = load_toml_config(f)
+                P.p(f'title: {obj["title"]}')
+                P.p(f'mount: {obj["look_for_dests"][0]["mount"]}')
         P.rule()
 
     elif args.examine:
         assert args.config is not None
         try:
             configfile = Path(args.config)
-            obj = yaml.safe_load(configfile.read_text())
+            obj = load_toml_config(configfile)
             P.p(json.dumps(obj,indent=4))
         except FileNotFoundError:
             P.rb(f'ERROR: could not find config file: {configfile}')
@@ -181,7 +198,7 @@ def main():
         assert args.config is not None
         try:
             configfile = Path(args.config)
-            obj = yaml.safe_load(configfile.read_text())
+            obj = load_toml_config(configfile)
         except FileNotFoundError:
             P.rb(f'ERROR: could not find config file: {configfile}')
             exit(1)
@@ -228,7 +245,7 @@ def main():
 
         P.header('Finding the config')
 
-        # load the yaml source
+        # load the toml source
         configfile = None
         if args.config is not None:
             try:
@@ -249,13 +266,11 @@ def main():
 
         P.header(f'Loading the config');
 
-
-        with configfile.open('r') as f:
-            obj = yaml.safe_load(f)
-
+        obj = load_toml_config(f)
+ 
         # Check it has the relevant type
         if not obj.get('type',None) == 'jbackup.conf.v1':
-            P.rb('ERROR: The loaded yaml source file does not look correct! Exiting.')
+            P.rb('ERROR: The loaded toml source file does not look correct! Exiting.')
             exit(1)
 
         P.header('Finding the destination');
