@@ -167,7 +167,7 @@ def main():
     args = parser.parse_args()
 
     if(args.version):
-        print('0.1')
+        print('0.2')
         exit()
 
     P = RichPrinter()
@@ -266,8 +266,8 @@ def main():
 
         P.header(f'Loading the config');
 
-        obj = load_toml_config(f)
- 
+        obj = load_toml_config(configfile)
+
         # Check it has the relevant type
         if not obj.get('type',None) == 'jbackup.conf.v1':
             P.rb('ERROR: The loaded toml source file does not look correct! Exiting.')
