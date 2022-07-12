@@ -8,6 +8,6 @@ mkdir -p $HOME/.config/snackpack
 
 echo "Copy in the config files"
 
-cp configs/thinkpad-basic.yaml $HOME/.config/snackpack/
+cp configs/*.toml $HOME/.config/snackpack/
 
 echo "...Finished."
