@@ -1,5 +1,20 @@
 
+## TODO
+
+1) Gather elsewhere all the argparse examples we have
+    * esp. basic subcommands
+2) Implement subcommands for snackpack
+2a) Confirm `-n` and `-p` commands
+3) Implement ability to use shortcut config name
+4) Evaluate and then remove `-d` option
+5) Gather elsewhere all our stdlib terminal styling code
+6) Remove `rich` dependency
+7) Cleanup the current `--map` output so it is more useful
+
+
 ## 20220720 Review
+
+### Reviewing our flags
 
 Looking at the current help
 
