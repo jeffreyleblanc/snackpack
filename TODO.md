@@ -1,4 +1,74 @@
 
+## 20220720 Review
+
+Looking at the current help
+
+```sh
+A tool to backup home directories
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -d DEST_ROOT, --dest-root DEST_ROOT
+                        Specify destination path.
+  -c CONFIG, --config CONFIG
+                        Specify path to config file to use
+  -p, --prompt-pause    Pause for a prompt on each chunk.
+  -n, --dry-run
+  --list-configs
+  --examine
+  --map
+  --version
+```
+
+So what do we actually do:
+
+```sh
+## Get the version
+snackpack --version
+
+## List Configs
+snackpack --list-configs
+#=> list a shortcut name?
+
+## Run a config
+snackpack -c ~/.config/snackpack/thinkpad-basic.toml
+#=> split into
+# 1) be able to do a shortcut to file name
+snackpack -c/--config think-basic
+# 2) Full config path
+snackpack --config-path FULLPATH
+
+## CONFIRM
+-n works
+-p works
+
+## REMOVE
+-d ... why do we need this at this point? seems confusing
+
+## --examine ... does?
+It is used to dump a config file, ala:
+snackpack -c ~/.config/snackpack/thinkpad-basic.toml --examine
+
+## --map is used as such:
+snackpack -c ~/.config/snackpack/thinkpad-basic.toml --map
+And dumps info on what is tracked, what is not, and sizes
+Needs to be cleaned up
+```
+
+Likely we should do sub commands like:
+
+```sh
+snackpack --version
+
+snackpack ls            # list commands
+snackpack run $CONFIG   [-n/-p] # current default run command
+snackpack dump $CONFIG  # current --examine flag
+snackpack map $CONFIG   # current --map flag, better name?
+
+
+
+## OLDER
+
 snackpack has been great, these two features will really be worth it
 
 updates to the actual sync:
