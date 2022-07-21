@@ -167,6 +167,7 @@ def main():
     p.add_argument('--full-path',action='store_true',help='Treat config_name as a filepath')
     p.add_argument('-p','--prompt-pause', action='store_true', help="Pause for a prompt on each chunk.")
     p.add_argument('-n','--dry-run', action='store_true')
+    p.add_argument('-d','--dest-root', default=None, help="Specify destination path.")
     # Dump
     p = subparsers.add_parser('dump', help='Dump configuration')
     p.add_argument('config_name',help='Configuration name')
