@@ -157,7 +157,7 @@ class ChunkSource:
 def main():
     parser = argparse.ArgumentParser(description='A tool to backup home directories.')
     subparsers = parser.add_subparsers(help='sub-command help',dest='main_command')
-    # version
+    # Version
     p = subparsers.add_parser('version', help='Show version info')
     # List
     p = subparsers.add_parser('ls', help='List configurations')
@@ -178,34 +178,30 @@ def main():
     # process
     args = parser.parse_args()
 
+    # Look for help/version
     if args.main_command is None:
         # parser.print_usage()
         parser.print_help()
-    else:
-        print(args)
-
-
-    return
-
-    parser = argparse.ArgumentParser(description="A tool to backup home directories")
-    parser.add_argument('-d','--dest-root', default=None, help="Specify destination path.")
-    parser.add_argument('-c','--config', default=None, help="Specify path to config file to use")
-    parser.add_argument('-p','--prompt-pause', action='store_true', help="Pause for a prompt on each chunk.")
-    parser.add_argument('-n','--dry-run', action='store_true')
-    parser.add_argument('--list-configs', action='store_true')
-    parser.add_argument('--examine', action='store_true')
-    parser.add_argument('--map', action='store_true')
-    parser.add_argument('--version', action='store_true')
-    args = parser.parse_args()
-
-    if(args.version):
-        print('0.2')
+        exit()
+    if 'version' == args.main_command:
+        print('0.3')
         exit()
 
+    # Make helpers
     P = RichPrinter()
     HOME = Path.home()
 
-    if args.list_configs:
+    def _load_config(args):
+        if not args.full_path:
+            config_path = HOME / f'.config/snackpack/{args.config_name}.toml'
+        else:
+            config_path = Path(args.config_name)
+        obj = load_toml_config(config_path)
+        return obj
+
+    #-- Commands -----------------------------------------------------------------------#
+
+    if 'ls' == args.main_command:
         configdir = HOME/'.config/snackpack'
         for f in configdir.iterdir():
             if f.suffix == '.toml':
@@ -216,21 +212,17 @@ def main():
                 P.p(f'mount: {obj["look_for_dests"][0]["mount"]}')
         P.rule()
 
-    elif args.examine:
-        assert args.config is not None
+    elif 'dump' == args.main_command:
         try:
-            configfile = Path(args.config)
-            obj = load_toml_config(configfile)
+            obj = _load_config(args)
             P.p(json.dumps(obj,indent=4))
         except FileNotFoundError:
             P.rb(f'ERROR: could not find config file: {configfile}')
             exit(1)
 
-    elif args.map:
-        assert args.config is not None
+    elif 'info' == args.main_command:
         try:
-            configfile = Path(args.config)
-            obj = load_toml_config(configfile)
+            obj = _load_config(args)
         except FileNotFoundError:
             P.rb(f'ERROR: could not find config file: {configfile}')
             exit(1)
@@ -268,37 +260,15 @@ def main():
                 print('ERROR?')
         print(f'Total {total_kb}K , {total_kb/1000}M, {total_kb/1000**2}G')
 
-    else:
+    elif 'sync' == args.main_command:
 
         P.header('Start')
 
         execute = not args.dry_run
         errors = []
 
-        P.header('Finding the config')
-
-        # load the toml source
-        configfile = None
-        if args.config is not None:
-            try:
-                configfile = Path(args.config)
-            except FileNotFoundError:
-                P.rb(f'ERROR: could not find config file: {configfile}')
-                exit(1)
-        else:
-            configdir = HOME/'.config/snackpack'
-            P.b(f'Looking for a default config in {configdir}...')
-            if not configdir.is_dir():
-                P.rb(f'ERROR: No default config directory found at {configdir}')
-                exit(1)
-            for f in configdir.iterdir():
-                configfile = f
-                P.b(f'Found and using {f}')
-                break
-
         P.header(f'Loading the config');
-
-        obj = load_toml_config(configfile)
+        obj = _load_config(args)
 
         # Check it has the relevant type
         if not obj.get('type',None) == 'jbackup.conf.v1':
