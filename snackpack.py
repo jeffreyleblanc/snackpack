@@ -155,6 +155,38 @@ class ChunkSource:
 #-- Main --------------------------------------------------------------------------------------#
 
 def main():
+    parser = argparse.ArgumentParser(description='A tool to backup home directories.')
+    subparsers = parser.add_subparsers(help='sub-command help',dest='main_command')
+    # version
+    p = subparsers.add_parser('version', help='Show version info')
+    # List
+    p = subparsers.add_parser('ls', help='List configurations')
+    # Sync
+    p = subparsers.add_parser('sync', help='Run synchronization')
+    p.add_argument('config_name',help='Configuration name')
+    p.add_argument('--full-path',action='store_true',help='Treat config_name as a filepath')
+    p.add_argument('-p','--prompt-pause', action='store_true', help="Pause for a prompt on each chunk.")
+    p.add_argument('-n','--dry-run', action='store_true')
+    # Dump
+    p = subparsers.add_parser('dump', help='Dump configuration')
+    p.add_argument('config_name',help='Configuration name')
+    p.add_argument('--full-path',action='store_true',help='Treat config_name as a filepath')
+    # Info
+    p = subparsers.add_parser('info', help='Print information on a configuration')
+    p.add_argument('config_name',help='Configuration name')
+    p.add_argument('--full-path',action='store_true',help='Treat config_name as a filepath')
+    # process
+    args = parser.parse_args()
+
+    if args.main_command is None:
+        # parser.print_usage()
+        parser.print_help()
+    else:
+        print(args)
+
+
+    return
+
     parser = argparse.ArgumentParser(description="A tool to backup home directories")
     parser.add_argument('-d','--dest-root', default=None, help="Specify destination path.")
     parser.add_argument('-c','--config', default=None, help="Specify path to config file to use")
