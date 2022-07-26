@@ -200,7 +200,7 @@ def main():
         obj = load_toml_config(config_path)
         return obj
 
-    #-- Commands -----------------------------------------------------------------------#
+    #-- Run Command -----------------------------------------------------------------------#
 
     if 'ls' == args.main_command:
         configdir = HOME/'.config/snackpack'
@@ -208,169 +208,163 @@ def main():
             if f.suffix == '.toml':
                 P.rule()
                 P.b(f)
-                obj = load_toml_config(f)
-                P.p(f'title: {obj["title"]}')
-                P.p(f'mount: {obj["look_for_dests"][0]["mount"]}')
+                conf = load_toml_config(f)
+                P.p(f'title: {conf["title"]}')
+                P.p(f'mount: {conf["look_for_dests"][0]["mount"]}')
         P.rule()
 
-    elif 'dump' == args.main_command:
+    else:
+        # Load the config file
         try:
-            obj = _load_config(args)
-            P.p(json.dumps(obj,indent=4))
+            CONFIG = _load_config(args)
         except FileNotFoundError:
             P.rb(f'ERROR: could not find config file: {configfile}')
             exit(1)
 
-    elif 'info' == args.main_command:
-        try:
-            obj = _load_config(args)
-        except FileNotFoundError:
-            P.rb(f'ERROR: could not find config file: {configfile}')
-            exit(1)
+        # Run the appropriate command
+        if 'dump' == args.main_command:
+            P.p(json.dumps(CONFIG,indent=4))
 
-        P.header('Map')
+        elif 'info' == args.main_command:
+            P.header('Map')
 
-        P.b('List all the paths in HOME')
-        all_paths = [ f for f in HOME.iterdir() ]
-        print(all_paths)
+            P.b('List all the paths in HOME')
+            all_paths = [ f for f in HOME.iterdir() ]
+            print(all_paths)
 
-        P.b('List all the paths in config')
-        sync_paths = []
-        for src in obj['sources']:
-            for f in src['sources']:
-                fpath = HOME/f
-                sync_paths.append(fpath)
-        print(sync_paths)
+            P.b('List all the paths in config')
+            sync_paths = []
+            for src in CONFIG['sources']:
+                for f in src['sources']:
+                    fpath = HOME/f
+                    sync_paths.append(fpath)
+            print(sync_paths)
 
-        P.b('Skipping path')
-        skipping = list( set(all_paths) - set(sync_paths) )
-        skipping.sort()
-        for f in skipping:
-            P.r(f)
+            P.b('Skipping path')
+            skipping = list( set(all_paths) - set(sync_paths) )
+            skipping.sort()
+            for f in skipping:
+                P.r(f)
 
-        P.b('Syncing paths')
-        total_kb = 0
-        for f in sync_paths:
-            P.p(f)
-            if f.is_dir() or f.is_file():
-                o = SimpleProc.run(f'du -sk {f}',check=True)
-                kb = int(o.replace(str(f),'').strip())
-                print(f'{kb}K')
-                total_kb += kb
+            P.b('Syncing paths')
+            total_kb = 0
+            for f in sync_paths:
+                P.p(f)
+                if f.is_dir() or f.is_file():
+                    o = SimpleProc.run(f'du -sk {f}',check=True)
+                    kb = int(o.replace(str(f),'').strip())
+                    print(f'{kb}K')
+                    total_kb += kb
+                else:
+                    print('ERROR?')
+            print(f'Total {total_kb}K , {total_kb/1000}M, {total_kb/1000**2}G')
+
+        elif 'sync' == args.main_command:
+
+            P.header('Start')
+            execute = not args.dry_run
+            errors = []
+
+            # Check it has the relevant type
+            if not CONFIG.get('type',None) == 'jbackup.conf.v1':
+                P.rb('ERROR: The loaded toml source file does not look correct! Exiting.')
+                exit(1)
+
+            P.header('Finding the destination');
+
+            # Setup our base paths
+            DEST_ROOT = None
+            if args.dest_root is not None:
+                DEST_ROOT = Path(args.dest_root)
+                if not DEST_ROOT.is_dir():
+                    P.rb(f'ERROR: The destination directory {DEST_ROOT} does not exsist. Exiting.')
+                    exit(1)
             else:
-                print('ERROR?')
-        print(f'Total {total_kb}K , {total_kb/1000}M, {total_kb/1000**2}G')
+                for dest in CONFIG.get('look_for_dests',[]):
+                    if dest.get('type','') == 'mount':
+                        mount = Path(dest.get('mount'))
+                        path = Path(dest.get('path'))
+                        P.k(f'Looking for mount {mount}...')
 
-    elif 'sync' == args.main_command:
-
-        P.header('Start')
-
-        execute = not args.dry_run
-        errors = []
-
-        P.header(f'Loading the config');
-        obj = _load_config(args)
-
-        # Check it has the relevant type
-        if not obj.get('type',None) == 'jbackup.conf.v1':
-            P.rb('ERROR: The loaded toml source file does not look correct! Exiting.')
-            exit(1)
-
-        P.header('Finding the destination');
-
-        # Setup our base paths
-        DEST_ROOT = None
-        if args.dest_root is not None:
-            DEST_ROOT = Path(args.dest_root)
-            if not DEST_ROOT.is_dir():
-                P.rb(f'ERROR: The destination directory {DEST_ROOT} does not exsist. Exiting.')
-                exit(1)
-        else:
-            for dest in obj.get('look_for_dests',[]):
-                if dest.get('type','') == 'mount':
-                    mount = Path(dest.get('mount'))
-                    path = Path(dest.get('path'))
-                    P.k(f'Looking for mount {mount}...')
-
-                    if mount.is_mount():
-                        P.b(f'Found mount {mount} and will use as destination.')
-                        DEST_ROOT = mount / path
-                        if not DEST_ROOT.is_dir():
-                            P.console.print()
-                            P.console.print(
-                                f'The path [bright_cyan]{path}[/bright_cyan] does exist on [bright_cyan]{mount}[/bright_cyan]. '
-                                'Should we make it?'
-                            )
-                            resp = P.console.input("(y/n): ")
-                            if resp == 'y':
-                                DEST_ROOT.mkdir(parents=True,exist_ok=True)
-                                P.g('created.')
-                            else:
-                                P.rb(f'[bold red]Exiting.')
-                                exit(1)
-                        break
-                    else:
-                        P.k('... not found')
-            if DEST_ROOT is None:
-                P.rb('ERROR: None of the default destination directories could be found. Exiting.')
-                exit(1)
-
-        # Go over each source chunk
-        for chunk_dict in obj['sources']:
-            # Load the chunk
-            chunk = ChunkSource(**chunk_dict)
-            P.console.rule(f'[blue]Syncing[/blue] [bold]{chunk.name}')
-
-            # Make the base destination
-            base_dest = DEST_ROOT/chunk.dest
-            base_dest.mkdir(parents=True,exist_ok=True)
-
-            # Sync the sources
-            for f in chunk.sources:
-                src = HOME/f
-                dest = base_dest/f
-
-                P.b(f)
-                P.p(f'{src} [green]=>[/green] {dest}')
-
-                if args.prompt_pause and console.input("continue? (y/n): ") != 'y':
-                    P.rb('Exiting.')
+                        if mount.is_mount():
+                            P.b(f'Found mount {mount} and will use as destination.')
+                            DEST_ROOT = mount / path
+                            if not DEST_ROOT.is_dir():
+                                P.console.print()
+                                P.console.print(
+                                    f'The path [bright_cyan]{path}[/bright_cyan] does exist on [bright_cyan]{mount}[/bright_cyan]. '
+                                    'Should we make it?'
+                                )
+                                resp = P.console.input("(y/n): ")
+                                if resp == 'y':
+                                    DEST_ROOT.mkdir(parents=True,exist_ok=True)
+                                    P.g('created.')
+                                else:
+                                    P.rb(f'[bold red]Exiting.')
+                                    exit(1)
+                            break
+                        else:
+                            P.k('... not found')
+                if DEST_ROOT is None:
+                    P.rb('ERROR: None of the default destination directories could be found. Exiting.')
                     exit(1)
 
-                if src.is_dir():
-                    rsync_cmd = f'rsync -av --delete {src}/. {dest}/.'
-                    if execute:
-                        dest.mkdir(parents=True,exist_ok=True)
-                        try:
-                            for line in SimpleProc.stream(rsync_cmd,check=True):
-                                P.c(f'    {line}')
-                        except subprocess.CalledProcessError as e:
-                            P.rb('Error rsyncing:')
-                            P.rb(e.stdout.decode())
-                            P.rb(e.stderr.decode())
+            # Go over each source chunk
+            for chunk_dict in CONFIG['sources']:
+                # Load the chunk
+                chunk = ChunkSource(**chunk_dict)
+                P.console.rule(f'[blue]Syncing[/blue] [bold]{chunk.name}')
+
+                # Make the base destination
+                base_dest = DEST_ROOT/chunk.dest
+                base_dest.mkdir(parents=True,exist_ok=True)
+
+                # Sync the sources
+                for f in chunk.sources:
+                    src = HOME/f
+                    dest = base_dest/f
+
+                    P.b(f)
+                    P.p(f'{src} [green]=>[/green] {dest}')
+
+                    if args.prompt_pause and console.input("continue? (y/n): ") != 'y':
+                        P.rb('Exiting.')
+                        exit(1)
+
+                    if src.is_dir():
+                        rsync_cmd = f'rsync -av --delete {src}/. {dest}/.'
+                        if execute:
+                            dest.mkdir(parents=True,exist_ok=True)
+                            try:
+                                for line in SimpleProc.stream(rsync_cmd,check=True):
+                                    P.c(f'    {line}')
+                            except subprocess.CalledProcessError as e:
+                                P.rb('Error rsyncing:')
+                                P.rb(e.stdout.decode())
+                                P.rb(e.stderr.decode())
+                        else:
+                            P.k(rsync_cmd)
+
+                    elif src.is_file():
+                        if execute:
+                            shutil.copy2(src,dest)
+                        else:
+                           P.k(f'copy2 {src} {dest}')
                     else:
-                        P.k(rsync_cmd)
+                        errors.append(dict(
+                            src = src, dest = dest,
+                            msg = 'Error: Source is neither source nor directory'
+                        ))
+                        P.r('Error: Source is neither source nor directory. Skipping.')
 
-                elif src.is_file():
-                    if execute:
-                        shutil.copy2(src,dest)
-                    else:
-                       P.k(f'copy2 {src} {dest}')
-                else:
-                    errors.append(dict(
-                        src = src, dest = dest,
-                        msg = 'Error: Source is neither source nor directory'
-                    ))
-                    P.r('Error: Source is neither source nor directory. Skipping.')
+                    P.p()
 
-                P.p()
+            if len(errors) > 0:
+                P.header('Errors',s='rb')
+                P.r('The following errors were encountered:')
+                P.console.print(errors,highlight=True)
 
-        if len(errors) > 0:
-            P.header('Errors',s='rb')
-            P.r('The following errors were encountered:')
-            P.console.print(errors,highlight=True)
-
-        P.header('End')
+            P.header('End')
 
 
 if __name__ == '__main__':
