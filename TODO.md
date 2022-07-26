@@ -1,17 +1,16 @@
 
 ## TODO
 
-1) Gather elsewhere all the argparse examples we have
-    * esp. basic subcommands
-    * see <https://docs.python.org/3/library/argparse.html#sub-commands>
-2) Implement subcommands for snackpack
-2a) Confirm `-n` and `-p` commands
-3) Implement ability to use shortcut config name
-4) Evaluate and then remove `-d` option
-5) Gather elsewhere all our stdlib terminal styling code
-6) Remove `rich` dependency
-    * see jknowledge/scaffolds/python-terminal/printer-1.py
-7) Cleanup the current `--map` output so it is more useful
+1) [x] Gather elsewhere all the argparse examples we have
+    * [x] esp. basic subcommands
+    * [x] see <https://docs.python.org/3/library/argparse.html#sub-commands>
+2) [x] Implement subcommands for snackpack
+2a) [ ] Confirm `-n` and `-p` flags are working
+3) [ ] Implement ability to use shortcut config name
+4) [ ] Evaluate and then remove `-d` option
+5) [x] Gather elsewhere all our stdlib terminal styling code
+6) [ ] Remove `rich` dependency
+7) [ ] Cleanup the current `--map` output so it is more useful
 
 
 ## 20220720 Review
