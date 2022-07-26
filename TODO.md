@@ -1,13 +1,11 @@
 
 ## TODO
 
-* [ ] Centralize config find/parse code for all subcommands
-* [ ] Implement ability to use shortcut config name
+* [ ] Remove `rich` dependency
+* [ ] Cleanup the current `--map` output so it is more useful
 * sync command
     * [ ] Confirm `-n` and `-p` flags are working
     * [ ] Evaluate and then remove `-d` option
-* [ ] Remove `rich` dependency
-* [ ] Cleanup the current `--map` output so it is more useful
 
 
 ## 20220720 Review
