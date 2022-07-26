@@ -1,16 +1,13 @@
 
 ## TODO
 
-1) [x] Gather elsewhere all the argparse examples we have
-    * [x] esp. basic subcommands
-    * [x] see <https://docs.python.org/3/library/argparse.html#sub-commands>
-2) [x] Implement subcommands for snackpack
-2a) [ ] Confirm `-n` and `-p` flags are working
-3) [ ] Implement ability to use shortcut config name
-4) [ ] Evaluate and then remove `-d` option
-5) [x] Gather elsewhere all our stdlib terminal styling code
-6) [ ] Remove `rich` dependency
-7) [ ] Cleanup the current `--map` output so it is more useful
+* [ ] Centralize config find/parse code for all subcommands
+* [ ] Implement ability to use shortcut config name
+* sync command
+    * [ ] Confirm `-n` and `-p` flags are working
+    * [ ] Evaluate and then remove `-d` option
+* [ ] Remove `rich` dependency
+* [ ] Cleanup the current `--map` output so it is more useful
 
 
 ## 20220720 Review
