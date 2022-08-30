@@ -13,63 +13,67 @@ import toml
 #-- RichPrinter --------------------------------------------------------------------------------------#
 
 import textwrap
-from functools import partial
-from rich.console import Console
+from os import get_terminal_size
+from math import floor,ceil
+import pprint
 
-class RichPrinter:
-
-    __version__ = '0.1.snackpack'
-
-    COLOR_MAP = dict(
-        p = '',
-        r = 'red',
-        g = 'green',
-        b = 'dodger_blue2',
-        y = 'yellow1',
-        c = 'cyan',
-        m = 'magenta',
-        k = 'grey30'
-    )
+class SnackPrinter:
 
     def __init__(self):
-        self.console = Console(highlight=False)
-        self._cached_meth = dict()
+        s = get_terminal_size()
+        self.NCOLS = s.columns
+        self.NROWS = s.lines
 
-    def __getattr__(self, k):
-        if k in self._cached_meth: return self._cached_meth[k]
-        bold = ' bold' if len(k) > 1 else ''
-        color = self.COLOR_MAP[k[0]]
-        meth = partial(self._p, s=f'{color}{bold}')
-        self._cached_meth[k] = meth
-        return meth
+    def p(self, text=''):
+        print(text)
 
-    def _p(self, *args, **kwargs):
-        justify = kwargs.get('j',None)
-        indent = kwargs.get('i',None)
-        padding = kwargs.get('p',False)
-        style = kwargs.get('s',None)
-        text = args[0] if len(args)==1 else ''
-        if indent is not None:
-            text = textwrap.indent(text, prefix=' '*indent)
-        if padding: self.console.print()
-        self.console.print(text,justify=justify,style=style)
-        if padding: self.console.print()
+    def red(self, text):
+        print(f"\x1b[31m{text}\x1b[0m")
 
-    def header(self, text, **kwargs):
-        p = kwargs.pop('p',True)
-        if p: self.p()
-        meth = getattr(self,kwargs.get('s','p'))
-        line = '='*self.console.size.width
-        meth(line)
-        meth(text,j=kwargs.get('j','center'))
-        meth(line)
-        if p: self.p()
+    def blue(self, text):
+        print(f"\x1b[38;5;27m{text}\x1b[0m")
 
-    def hr(self, **kwargs):
-        padding = kwargs.get('p',True)
-        call_style = kwargs.get('s','p')
-        tcol = self.console.size.width
-        getattr(self,call_style)('-'*tcol,p=padding)
+    def cyan(self, text):
+        print(f"\x1b[36m{text}\x1b[0m")
+
+    def redbold(self, text):
+        print(f"\x1b[31;1m{text}\x1b[0m")
+
+    def green(self, text):
+        print(f"\x1b[92m{text}\x1b[0m")
+
+    def gray(self, text):
+        print(f"\x1b[38;5;239m{text}\x1b[0m")
+
+    def indent(self, text, indent=4):
+        return textwrap.indent(text, prefix=' '*indent)
+
+    def hr(self, char='=', newline=False):
+        line = char*self.NCOLS
+        return ( f'\n{line}\n' if newline else line )
+
+    def center(self, text, pad=None, newline=False):
+        tl = len(text)
+        n = 0.5 * ( self.NCOLS - tl )
+        if pad is None:
+            line = f'{" "*floor(n)}{text}{" "*ceil(n)}'
+        else:
+            n -= 2
+            line = f'{pad*floor(n)}  {text}  {pad*ceil(n)}'
+        return ( f'\n{line}\n' if newline else line )
+
+    def head(self, text):
+        hr = self.hr()
+        line = f'{hr}\n{self.center(text)}\n{hr}'
+        return f'\n{line}\n'
+
+    def green_arrow(self, text1, text2):
+        print(f"{text1} \x1b[92m=>\x1b[0m {text2}")
+
+    def object(self, obj):
+        pp = pprint.PrettyPrinter(indent=4)
+        pp.pprint(obj)
+
 
 #-- SimpleProc ------------------------------------------------------------------#
 
@@ -189,7 +193,7 @@ def main():
         exit()
 
     # Make helpers
-    P = RichPrinter()
+    P = SnackPrinter()
     HOME = Path.home()
 
     def _load_config(args):
@@ -206,12 +210,12 @@ def main():
         configdir = HOME/'.config/snackpack'
         for f in configdir.iterdir():
             if f.suffix == '.toml':
-                P.rule()
-                P.b(f)
+                P.hr()
+                P.blue(f)
                 conf = load_toml_config(f)
                 P.p(f'title: {conf["title"]}')
                 P.p(f'mount: {conf["look_for_dests"][0]["mount"]}')
-        P.rule()
+        P.hr() # P.rule()
 
     else:
         # Load the config file
@@ -226,97 +230,97 @@ def main():
             P.p(json.dumps(CONFIG,indent=4))
 
         elif 'info' == args.main_command:
-            P.header('Map')
+            P.p(P.head('Map'))
 
-            P.b('List all the paths in HOME')
+            P.blue('List all the paths in HOME')
             all_paths = [ f for f in HOME.iterdir() ]
-            print(all_paths)
+            P.p(all_paths)
 
-            P.b('List all the paths in config')
+            P.blue('List all the paths in config')
             sync_paths = []
             for src in CONFIG['sources']:
                 for f in src['sources']:
                     fpath = HOME/f
                     sync_paths.append(fpath)
-            print(sync_paths)
+            P.p(sync_paths)
 
-            P.b('Skipping path')
+            P.blue('Skipping path')
             skipping = list( set(all_paths) - set(sync_paths) )
             skipping.sort()
             for f in skipping:
-                P.r(f)
+                P.red(f)
 
-            P.b('Syncing paths')
+            P.blue('Syncing paths')
             total_kb = 0
             for f in sync_paths:
                 P.p(f)
                 if f.is_dir() or f.is_file():
                     o = SimpleProc.run(f'du -sk {f}',check=True)
                     kb = int(o.replace(str(f),'').strip())
-                    print(f'{kb}K')
+                    P.p(f'{kb}K')
                     total_kb += kb
                 else:
                     print('ERROR?')
-            print(f'Total {total_kb}K , {total_kb/1000}M, {total_kb/1000**2}G')
+            P.p(f'Total {total_kb}K , {total_kb/1000}M, {total_kb/1000**2}G')
 
         elif 'sync' == args.main_command:
 
-            P.header('Start')
+            P.p(P.head('Start'))
             execute = not args.dry_run
             errors = []
 
             # Check it has the relevant type
             if not CONFIG.get('type',None) == 'jbackup.conf.v1':
-                P.rb('ERROR: The loaded toml source file does not look correct! Exiting.')
+                P.redbold('ERROR: The loaded toml source file does not look correct! Exiting.')
                 exit(1)
 
-            P.header('Finding the destination');
+            P.p(P.head('Finding the destination'))
 
             # Setup our base paths
             DEST_ROOT = None
             if args.dest_root is not None:
                 DEST_ROOT = Path(args.dest_root)
                 if not DEST_ROOT.is_dir():
-                    P.rb(f'ERROR: The destination directory {DEST_ROOT} does not exsist. Exiting.')
+                    P.redbold(f'ERROR: The destination directory {DEST_ROOT} does not exsist. Exiting.')
                     exit(1)
             else:
                 for dest in CONFIG.get('look_for_dests',[]):
                     if dest.get('type','') == 'mount':
                         mount = Path(dest.get('mount'))
                         path = Path(dest.get('path'))
-                        P.k(f'Looking for mount {mount}...')
+                        P.gray(f'Looking for mount {mount}...')
 
                         if execute:
                             if mount.is_mount():
-                                P.b(f'Found mount {mount} and will use as destination.')
+                                P.blue(f'Found mount {mount} and will use as destination.')
                                 DEST_ROOT = mount / path
                                 if not DEST_ROOT.is_dir():
-                                    P.console.print()
-                                    P.console.print(
-                                        f'The path [bright_cyan]{path}[/bright_cyan] does exist on [bright_cyan]{mount}[/bright_cyan]. '
+                                    P.p()
+                                    P.p(
+                                        f'The path {path} does exist on {mount}. '
                                         'Should we make it?'
                                     )
-                                    resp = P.console.input("(y/n): ")
+                                    resp = input("(y/n): ")
                                     if resp == 'y':
                                         DEST_ROOT.mkdir(parents=True,exist_ok=True)
-                                        P.g('created.')
+                                        P.green('created.')
                                     else:
-                                        P.rb(f'[bold red]Exiting.')
+                                        P.redbold(f'[bold red]Exiting.')
                                         exit(1)
                                 break
                             else:
-                                P.k('... not found')
+                                P.gray('... not found')
                         else:
                             DEST_ROOT = mount / path
                 if DEST_ROOT is None:
-                    P.rb('ERROR: None of the default destination directories could be found. Exiting.')
+                    P.redbold('ERROR: None of the default destination directories could be found. Exiting.')
                     exit(1)
 
             # Go over each source chunk
             for chunk_dict in CONFIG['sources']:
                 # Load the chunk
                 chunk = ChunkSource(**chunk_dict)
-                P.console.rule(f'[blue]Syncing[/blue] [bold]{chunk.name}')
+                P.p(P.center(f'Syncing {chunk.name}',pad='-',newline=True))
 
                 # Make the base destination
                 base_dest = DEST_ROOT/chunk.dest
@@ -328,11 +332,11 @@ def main():
                     src = HOME/f
                     dest = base_dest/f
 
-                    P.b(f)
-                    P.p(f'{src} [green]=>[/green] {dest}')
+                    P.blue(f)
+                    P.green_arrow(src,dest)
 
-                    if args.prompt_pause and console.input("continue? (y/n): ") != 'y':
-                        P.rb('Exiting.')
+                    if args.prompt_pause and input("continue? (y/n): ") != 'y':
+                        P.redbold('Exiting.')
                         exit(1)
 
                     if src.is_dir():
@@ -341,34 +345,34 @@ def main():
                             dest.mkdir(parents=True,exist_ok=True)
                             try:
                                 for line in SimpleProc.stream(rsync_cmd,check=True):
-                                    P.c(f'    {line}')
+                                    P.cyan(f'    {line}')
                             except subprocess.CalledProcessError as e:
-                                P.rb('Error rsyncing:')
-                                P.rb(e.stdout.decode())
-                                P.rb(e.stderr.decode())
+                                P.redbold('Error rsyncing:')
+                                P.redbold(e.stdout.decode())
+                                P.redbold(e.stderr.decode())
                         else:
-                            P.k(rsync_cmd)
+                            P.gray(rsync_cmd)
 
                     elif src.is_file():
                         if execute:
                             shutil.copy2(src,dest)
                         else:
-                           P.k(f'copy2 {src} {dest}')
+                           P.gray(f'copy2 {src} {dest}')
                     else:
                         errors.append(dict(
                             src = src, dest = dest,
                             msg = 'Error: Source is neither source nor directory'
                         ))
-                        P.r('Error: Source is neither source nor directory. Skipping.')
+                        P.red('Error: Source is neither source nor directory. Skipping.')
 
                     P.p()
 
             if len(errors) > 0:
-                P.header('Errors',s='rb')
-                P.r('The following errors were encountered:')
-                P.console.print(errors,highlight=True)
+                P.redbold(P.head('Errors'))
+                P.red('The following errors were encountered:')
+                P.object(errors)
 
-            P.header('End')
+            P.p(P.head('End'))
 
 
 if __name__ == '__main__':
