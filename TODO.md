@@ -1,7 +1,6 @@
 
 ## TODO
 
-* [ ] Cleanup the current `--map` output so it is more useful
 * [ ] sync command
     * [ ] Confirm working as normal
     * [ ] Confirm `-p` flag is working

@@ -21,40 +21,28 @@ class SnackPrinter:
 
     def __init__(self):
         s = get_terminal_size()
-        self.NCOLS = s.columns
-        self.NROWS = s.lines
+        self.width = s.columns
 
-    def p(self, text=''):
-        print(text)
-
-    def red(self, text):
-        print(f"\x1b[31m{text}\x1b[0m")
-
-    def blue(self, text):
-        print(f"\x1b[38;5;27m{text}\x1b[0m")
-
-    def cyan(self, text):
-        print(f"\x1b[36m{text}\x1b[0m")
-
-    def redbold(self, text):
-        print(f"\x1b[31;1m{text}\x1b[0m")
-
-    def green(self, text):
-        print(f"\x1b[92m{text}\x1b[0m")
-
-    def gray(self, text):
-        print(f"\x1b[38;5;239m{text}\x1b[0m")
+    def p(self, text=''):   print(text)
+    def bold(self, text):  print(f"\x1b[1m{text}\x1b[0m")
+    def red(self, text):    print(f"\x1b[31m{text}\x1b[0m")
+    def yellow(self, text): print(f"\x1b[93m{text}\x1b[0m")
+    def blue(self, text):   print(f"\x1b[38;5;27m{text}\x1b[0m")
+    def cyan(self, text):   print(f"\x1b[36m{text}\x1b[0m")
+    def green(self, text):  print(f"\x1b[92m{text}\x1b[0m")
+    def gray(self, text):   print(f"\x1b[38;5;239m{text}\x1b[0m")
+    def redbold(self, text):  print(f"\x1b[31;1m{text}\x1b[0m")
 
     def indent(self, text, indent=4):
         return textwrap.indent(text, prefix=' '*indent)
 
     def hr(self, char='=', newline=False):
-        line = char*self.NCOLS
+        line = char*self.width
         return ( f'\n{line}\n' if newline else line )
 
     def center(self, text, pad=None, newline=False):
         tl = len(text)
-        n = 0.5 * ( self.NCOLS - tl )
+        n = 0.5 * ( self.width - tl )
         if pad is None:
             line = f'{" "*floor(n)}{text}{" "*ceil(n)}'
         else:
@@ -231,38 +219,63 @@ def main():
             P.p(json.dumps(CONFIG,indent=4))
 
         elif 'info' == args.main_command:
-            P.p(P.head('Map'))
+            P.p(P.head('Sync Information'))
 
-            P.blue('List all the paths in HOME')
+            def pkind(path):
+                if f.is_file(): return 'f'
+                elif f.is_dir(): return 'd'
+                return '-'
+
+            # Get all the paths
             all_paths = [ f for f in HOME.iterdir() ]
-            P.p(all_paths)
 
-            P.blue('List all the paths in config')
+            # Get all sources syncing
             sync_paths = []
             for src in CONFIG['sources']:
                 for f in src['sources']:
                     fpath = HOME/f
                     sync_paths.append(fpath)
-            P.p(sync_paths)
 
-            P.blue('Skipping path')
+            # Look at paths being skipped
+            P.yellow('Skipping the following paths (d: dir, f: file)')
             skipping = list( set(all_paths) - set(sync_paths) )
-            skipping.sort()
+            skipping_lst = []
             for f in skipping:
-                P.red(f)
+                skipping_lst.append(f'{pkind(f)}  {f.relative_to(HOME)}')
+            skipping_lst.sort()
+            P.p('\n'.join(skipping_lst))
 
-            P.blue('Syncing paths')
+            P.p(P.hr(char='-',newline=True))
+
+            # Look at paths to be synced
+            P.blue('Syncing the following paths')
             total_kb = 0
+            results = []
+            errors = []
             for f in sync_paths:
-                P.p(f)
-                if f.is_dir() or f.is_file():
+                kind = pkind(f)
+                if kind == '-':
+                    errors.append(f)
+                else:
                     o = SimpleProc.run(f'du -sk {f}',check=True)
                     kb = int(o.replace(str(f),'').strip())
-                    P.p(f'{kb}K')
                     total_kb += kb
-                else:
-                    print('ERROR?')
-            P.p(f'Total {total_kb}K , {total_kb/1000}M, {total_kb/1000**2}G')
+                    results.append(dict(
+                        path= f,
+                        rel= f.relative_to(HOME),
+                        kind= kind,
+                        kb= kb
+                    ))
+
+            R = sorted([ f'{r["kind"]} {r["kb"]:9}K  {r["rel"]}' for r in results ])
+            P.p('\n'.join(R))
+            P.bold(f'\nTotal {total_kb}K, {total_kb/1000}M, {total_kb/1000**2}G\n')
+
+            if len(errors) > 0:
+                P.red('The following paths have errors:')
+                for f in errors:
+                    P.p(f'* {f.relative_to(HOME)}')
+            P.p()
 
         elif 'sync' == args.main_command:
 
