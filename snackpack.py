@@ -210,12 +210,13 @@ def main():
         configdir = HOME/'.config/snackpack'
         for f in configdir.iterdir():
             if f.suffix == '.toml':
-                P.hr()
-                P.blue(f)
+                P.gray(P.hr(char='-'))
+                P.blue(f.stem)
+                P.p(f)
                 conf = load_toml_config(f)
                 P.p(f'title: {conf["title"]}')
                 P.p(f'mount: {conf["look_for_dests"][0]["mount"]}')
-        P.hr() # P.rule()
+        P.gray(P.hr(char='-'))
 
     else:
         # Load the config file
