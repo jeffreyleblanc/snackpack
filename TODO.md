@@ -1,13 +1,14 @@
 
 ## TODO
 
-* [ ] if `-n` is used with sync, make it ok if the media is not present
-* [ ] Remove `rich` dependency
 * [ ] Cleanup the current `--map` output so it is more useful
-* sync command
-    * [ ] Confirm `-n` and `-p` flags are working
+* [ ] sync command
+    * [ ] Confirm working as normal
+    * [ ] Confirm `-p` flag is working
     * [ ] Evaluate and then remove `-d` option
-
+* [ ] clean up README
+* [ ] install as next version
+* [ ] clean up TODO
 
 ## 20220720 Review
 
