@@ -1,6 +1,7 @@
 
 ## TODO
 
+* [ ] if `-n` is used with sync, make it ok if the media is not present
 * [ ] Remove `rich` dependency
 * [ ] Cleanup the current `--map` output so it is more useful
 * sync command
