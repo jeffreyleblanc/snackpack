@@ -78,3 +78,9 @@ if __name__ == '__main__':
     P.green(P.center('some nice text',pad='-'))
     P.blue(P.head('some nice text'))
     P.green_arrow('This','That')
+
+    resp = input("(y/n): ")
+    if resp == 'y':
+        P.green('created.')
+    else:
+        P.redbold(f'exiting.')

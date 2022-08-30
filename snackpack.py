@@ -286,25 +286,28 @@ def main():
                         path = Path(dest.get('path'))
                         P.k(f'Looking for mount {mount}...')
 
-                        if mount.is_mount():
-                            P.b(f'Found mount {mount} and will use as destination.')
-                            DEST_ROOT = mount / path
-                            if not DEST_ROOT.is_dir():
-                                P.console.print()
-                                P.console.print(
-                                    f'The path [bright_cyan]{path}[/bright_cyan] does exist on [bright_cyan]{mount}[/bright_cyan]. '
-                                    'Should we make it?'
-                                )
-                                resp = P.console.input("(y/n): ")
-                                if resp == 'y':
-                                    DEST_ROOT.mkdir(parents=True,exist_ok=True)
-                                    P.g('created.')
-                                else:
-                                    P.rb(f'[bold red]Exiting.')
-                                    exit(1)
-                            break
+                        if execute:
+                            if mount.is_mount():
+                                P.b(f'Found mount {mount} and will use as destination.')
+                                DEST_ROOT = mount / path
+                                if not DEST_ROOT.is_dir():
+                                    P.console.print()
+                                    P.console.print(
+                                        f'The path [bright_cyan]{path}[/bright_cyan] does exist on [bright_cyan]{mount}[/bright_cyan]. '
+                                        'Should we make it?'
+                                    )
+                                    resp = P.console.input("(y/n): ")
+                                    if resp == 'y':
+                                        DEST_ROOT.mkdir(parents=True,exist_ok=True)
+                                        P.g('created.')
+                                    else:
+                                        P.rb(f'[bold red]Exiting.')
+                                        exit(1)
+                                break
+                            else:
+                                P.k('... not found')
                         else:
-                            P.k('... not found')
+                            DEST_ROOT = mount / path
                 if DEST_ROOT is None:
                     P.rb('ERROR: None of the default destination directories could be found. Exiting.')
                     exit(1)
@@ -317,7 +320,8 @@ def main():
 
                 # Make the base destination
                 base_dest = DEST_ROOT/chunk.dest
-                base_dest.mkdir(parents=True,exist_ok=True)
+                if execute:
+                    base_dest.mkdir(parents=True,exist_ok=True)
 
                 # Sync the sources
                 for f in chunk.sources:
