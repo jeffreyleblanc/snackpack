@@ -159,7 +159,6 @@ def main():
     p.add_argument('--full-path',action='store_true',help='Treat config_name as a filepath')
     p.add_argument('-p','--prompt-pause', action='store_true', help="Pause for a prompt on each chunk.")
     p.add_argument('-n','--dry-run', action='store_true')
-    p.add_argument('-d','--dest-root', default=None, help="Specify destination path.")
     # Dump
     p = subparsers.add_parser('dump', help='Dump configuration')
     p.add_argument('config_name',help='Configuration name')
@@ -292,43 +291,39 @@ def main():
 
             # Setup our base paths
             DEST_ROOT = None
-            if args.dest_root is not None:
-                DEST_ROOT = Path(args.dest_root)
-                if not DEST_ROOT.is_dir():
-                    P.redbold(f'ERROR: The destination directory {DEST_ROOT} does not exsist. Exiting.')
-                    exit(1)
-            else:
-                for dest in CONFIG.get('look_for_dests',[]):
-                    if dest.get('type','') == 'mount':
-                        mount = Path(dest.get('mount'))
-                        path = Path(dest.get('path'))
-                        P.gray(f'Looking for mount {mount}...')
+            for dest in CONFIG.get('look_for_dests',[]):
+                if dest.get('type','') == 'mount':
+                    mount = Path(dest.get('mount'))
+                    path = Path(dest.get('path'))
+                    P.gray(f'Looking for mount {mount}...')
 
-                        if execute:
-                            if mount.is_mount():
-                                P.blue(f'Found mount {mount} and will use as destination.')
-                                DEST_ROOT = mount / path
-                                if not DEST_ROOT.is_dir():
-                                    P.p()
-                                    P.p(
-                                        f'The path {path} does exist on {mount}. '
-                                        'Should we make it?'
-                                    )
-                                    resp = input("(y/n): ")
-                                    if resp == 'y':
-                                        DEST_ROOT.mkdir(parents=True,exist_ok=True)
-                                        P.green('created.')
-                                    else:
-                                        P.redbold(f'[bold red]Exiting.')
-                                        exit(1)
-                                break
-                            else:
-                                P.gray('... not found')
-                        else:
+                    if execute:
+                        if mount.is_mount():
+                            P.blue(f'Found mount {mount} and will use as destination.')
                             DEST_ROOT = mount / path
-                if DEST_ROOT is None:
-                    P.redbold('ERROR: None of the default destination directories could be found. Exiting.')
-                    exit(1)
+                            if not DEST_ROOT.is_dir():
+                                P.p()
+                                P.p(
+                                    f'The path {path} does exist on {mount}. '
+                                    'Should we make it?'
+                                )
+                                resp = input("(y/n): ")
+                                if resp == 'y':
+                                    DEST_ROOT.mkdir(parents=True,exist_ok=True)
+                                    P.green('created.')
+                                else:
+                                    P.redbold(f'[bold red]Exiting.')
+                                    exit(1)
+                            break
+                        else:
+                            P.gray('... not found')
+                    else:
+                        DEST_ROOT = mount / path
+
+            # Ensure we have a destination
+            if DEST_ROOT is None:
+                P.redbold('ERROR: None of the default destination directories could be found. Exiting.')
+                exit(1)
 
             # Go over each source chunk
             for chunk_dict in CONFIG['sources']:
