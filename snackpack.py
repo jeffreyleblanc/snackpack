@@ -1,5 +1,9 @@
 #! /usr/bin/env python3
 
+# snackpack.py
+# Copyright (c) 2022-present Jeffrey LeBlanc
+# Released under the MIT License: https://opensource.org/licenses/MIT
+
 # Python
 from pathlib import Path
 import json
