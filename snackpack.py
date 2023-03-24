@@ -241,7 +241,7 @@ def main():
                     sync_paths.append(fpath)
 
             # Look at paths being skipped
-            P.yellow('Skipping the following paths (d: dir, f: file)')
+            P.yellow('Skipping the following paths (d: dir, f: file, l: symlink)')
             skipping = list( set(all_paths) - set(sync_paths) )
             skipping_lst = []
             for f in skipping:
