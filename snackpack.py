@@ -225,7 +225,8 @@ def main():
             P.p(P.head('Sync Information'))
 
             def pkind(path):
-                if f.is_file(): return 'f'
+                if f.is_symlink(): return 'l'
+                elif f.is_file(): return 'f'
                 elif f.is_dir(): return 'd'
                 return '-'
 
