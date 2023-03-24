@@ -78,7 +78,7 @@ class SimpleProc:
     See <https://docs.python.org/3/library/subprocess.html> for details.
     '''
 
-    __version__ = '0.1'
+    __version__ = '0.1.1'
 
     @classmethod
     def run(cls, cmd, check=False):
