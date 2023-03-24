@@ -15,7 +15,8 @@ $ sudo ./_uninstall.sh
 
 ## Configuration
 
-Configs should be placed in `~/.config/snackpack/`. An example is below.
+Configs should be placed in `~/.config/snackpack/`.
+See `example.toml` in the root of this repository for an example.
 
 The easiest way to make one is to run:
 
@@ -32,9 +33,22 @@ $ ( cd $HOME && ls -1 && ls -d1 .!(|.) )
 Which will output all your home directory with dotfile last.
 You can then break this up and comment out files/paths you don't want to sync.
 
+## Usage
 
-## Example Config File
+Common usage:
 
-See the `example.toml` in the root of this repository.
+```sh
+# Get help
+$ snackpack -h
+
+# List sync configs
+$ snackpack ls
+
+# Sync against a config
+$ snackpack sync CONFIG_NAME
+
+# Get info on what a config does and doesn not sync
+$ snackpack info CONFIG_NAME
+```
 
 

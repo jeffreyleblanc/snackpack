@@ -2,14 +2,14 @@
 
 * For `snackpack info <config>`:
     * [x] differentiate symlinks (directory and files)
-* [ ] Update the README
+* [x] Update the README
 * [ ] make ls also list mounted items and tag if one of the configs has a mounted item
 
 ---
 
 Low priorities but:
 
-* [ ] make a log in .jlocal/backup of all the backups, and flags with timestamp
+* [ ] make a log in .config/snackpack/backup of all the backups, and flags with timestamp
 * [ ] maybe try --progress and/or --partial on the rsync? however these might be updating specific lines...
 * [ ] test interruption
 
