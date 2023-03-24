@@ -1,10 +1,9 @@
 # TODO
 
 * For `snackpack info <config>`:
-    * [ ] differentiate symlinks (directory and files)
+    * [x] differentiate symlinks (directory and files)
 * [ ] Update the README
 * [ ] make ls also list mounted items and tag if one of the configs has a mounted item
-* [ ] Make snackpack match whatever source configs there are to the device mounted, and if one match, can run
 
 ---
 
