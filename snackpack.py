@@ -180,7 +180,7 @@ def main():
         parser.print_help()
         exit()
     if 'version' == args.main_command:
-        print('0.3')
+        print('0.3.1')
         exit()
 
     # Make helpers
