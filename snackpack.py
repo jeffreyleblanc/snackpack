@@ -213,7 +213,8 @@ def main():
                 P.p(f)
                 conf = load_toml_config(f)
                 P.p(f'title: {conf["title"]}')
-                P.p(f'mount: {conf["look_for_dests"][0]["mount"]}')
+                for mnt in conf["look_for_dests"]:
+                    P.p(f'mount: {mnt["mount"]}')
         P.gray(P.hr(char='-'))
 
     else:
@@ -301,7 +302,8 @@ def main():
 
             P.p(P.head('Finding the destination'))
 
-            # Setup our base paths
+            # Setup our base destination path
+            # Note that we choose the last available mount
             DEST_ROOT = None
             for dest in CONFIG.get('look_for_dests',[]):
                 if dest.get('type','') == 'mount':
@@ -309,28 +311,25 @@ def main():
                     path = Path(dest.get('path'))
                     P.gray(f'Looking for mount {mount}...')
 
-                    if execute:
-                        if mount.is_mount():
-                            P.blue(f'Found mount {mount} and will use as destination.')
-                            DEST_ROOT = mount / path
-                            if not DEST_ROOT.is_dir():
-                                P.p()
-                                P.p(
-                                    f'The path {path} does exist on {mount}. '
-                                    'Should we make it?'
-                                )
-                                resp = input("(y/n): ")
-                                if resp == 'y':
-                                    DEST_ROOT.mkdir(parents=True,exist_ok=True)
-                                    P.green('created.')
-                                else:
-                                    P.redbold(f'[bold red]Exiting.')
-                                    exit(1)
-                            break
-                        else:
-                            P.gray('... not found')
-                    else:
+                    if mount.is_mount():
+                        P.blue(f'Found mount {mount} and will use as destination.')
                         DEST_ROOT = mount / path
+                        if not DEST_ROOT.is_dir():
+                            P.p()
+                            P.p(
+                                f'The path {path} does exist on {mount}. '
+                                'Should we make it?'
+                            )
+                            resp = input("(y/n): ")
+                            if resp == 'y':
+                                DEST_ROOT.mkdir(parents=True,exist_ok=True)
+                                P.green('created.')
+                            else:
+                                P.redbold(f'[bold red]Exiting.')
+                                exit(1)
+                        break
+                    else:
+                        P.gray('... not found')
 
             # Ensure we have a destination
             if DEST_ROOT is None:
