@@ -45,7 +45,11 @@ $ snackpack -h
 $ snackpack ls
 
 # Sync against a config
+# Will choose last available mount
 $ snackpack sync CONFIG_NAME
+
+# To do a dry run
+$ snackpack sync CONFIG_NAME -n
 
 # Get info on what a config does and doesn not sync
 $ snackpack info CONFIG_NAME

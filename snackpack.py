@@ -187,7 +187,7 @@ def main():
         parser.print_help()
         exit()
     if 'version' == args.main_command:
-        print('0.3.1')
+        print('0.4.0')
         exit()
 
     # Make helpers

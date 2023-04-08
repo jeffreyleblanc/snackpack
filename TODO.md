@@ -1,7 +1,7 @@
 # TODO
 
 * [ ] make ls also list mounted items and tag if one of the configs has a mounted item
-* [ ] enable a config file to have multiple mounts it can use
+* [x] enable a config file to have multiple mounts it can use
 * [ ] make a `build-config` command that will generate a config file scaffold
 
 ---
