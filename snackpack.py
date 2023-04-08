@@ -24,8 +24,15 @@ import pprint
 class SnackPrinter:
 
     def __init__(self):
-        s = get_terminal_size()
-        self.width = s.columns
+        try:
+            """
+            If you pipe to less for example, you get an error.
+            For now, we just set a default width in that case.
+            """
+            s = get_terminal_size()
+            self.width = s.columns
+        except Exception as e:
+            self.width = 80
 
     def p(self, text=''):   print(text)
     def bold(self, text):  print(f"\x1b[1m{text}\x1b[0m")
