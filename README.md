@@ -7,10 +7,10 @@ It uses a list of paths in your home directory to be synced, and then uses rsync
 
 ```sh
 # Install as /usr/local/bin/snackpack
-$ sudo ./_install.sh
+$ make install
 
 # Uninstall
-$ sudo ./_uninstall.sh
+$ make uninstall
 ```
 
 ## Configuration
