@@ -9,6 +9,7 @@
 Low priorities but:
 
 * [ ] make a log in .config/snackpack/backup of all the backups, and flags with timestamp
+    * [ ] Also log on the target drive somehow
 * [ ] maybe try --progress and/or --partial on the rsync? however these might be updating specific lines...
 * [ ] test interruption
 
