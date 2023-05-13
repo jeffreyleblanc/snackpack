@@ -4,6 +4,10 @@
 * [x] enable a config file to have multiple mounts it can use
 * [ ] make a `build-config` command that will generate a config file scaffold
 
+* [ ] make sure comes up with total size of backup
+    * [ ] on host
+    * [ ] look at size diff with target storage as well
+
 ---
 
 Low priorities but:
