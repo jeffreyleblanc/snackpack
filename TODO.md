@@ -8,6 +8,10 @@
     * [ ] on host
     * [ ] look at size diff with target storage as well
 
+* [ ] info should sort what syncing by alphabet and use human readable size info
+* [ ] we need some way to check state of a target drive better
+    * [ ] especially if it has root directories no longer tracked
+
 ---
 
 Low priorities but:
