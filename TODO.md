@@ -17,7 +17,8 @@
 Low priorities but:
 
 * [ ] make a log in .config/snackpack/backup of all the backups, and flags with timestamp
-    * [ ] Also log on the target drive somehow
+    * [ ] Also log on the target drive somewhere, maybe `_snackpack-history/` root
+* [ ] Each entry has a unique id for the sync and a start/end timestamp
 * [ ] maybe try --progress and/or --partial on the rsync? however these might be updating specific lines...
 * [ ] test interruption
 
