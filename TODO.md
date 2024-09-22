@@ -12,6 +12,13 @@
 * [ ] we need some way to check state of a target drive better
     * [ ] especially if it has root directories no longer tracked
 
+* [ ] be able to tag a specific version of your directory structure, so `sync` can smartly
+  check if it's the same
+
+* [ ] need better methods to add custom ignoring of:
+    * [ ] system wide patterns like `node_modules/`
+* [ ] a bigger leap, is syncing git repos specifically and respecting `.gitignore`
+
 ---
 
 Low priorities but:
