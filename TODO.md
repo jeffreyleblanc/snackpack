@@ -1,5 +1,9 @@
 # TODO
 
+* [ ] List dependencies more clearly
+    * `apt-get install make python3-toml`
+* [ ] better error message if the config file is not found
+
 * [ ] make ls also list mounted items and tag if one of the configs has a mounted item
 * [x] enable a config file to have multiple mounts it can use
 * [ ] make a `build-config` command that will generate a config file scaffold
